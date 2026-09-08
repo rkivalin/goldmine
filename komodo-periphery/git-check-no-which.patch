@@ -1,0 +1,19 @@
+Check git via `git --version` instead of `which git`.
+
+`run_standard_command` does not go through a shell, so `which git` executes
+the /usr/bin/which binary directly. On Arch `which` is a separate package
+(not in base), so the check fails with the misleading "'git' is not
+installed or available on $PATH" even when git is present. Spawning git
+itself avoids the extra dependency.
+
+--- a/lib/git/src/installed.rs
++++ b/lib/git/src/installed.rs
+@@ -6,7 +6,7 @@ use command::{CommandOptions, run_standard_command};
+ /// Returns error if git not installed
+ pub async fn check_installed() -> anyhow::Result<()> {
+   if run_standard_command(
+-    "which git",
++    "git --version",
+     CommandOptions::default().timeout(Duration::from_secs(2)),
+   )
+   .await

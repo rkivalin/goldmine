@@ -1,0 +1,16 @@
+[Unit]
+Description=Komodo Periphery agent
+Documentation=https://komo.do/docs
+After=network-online.target docker.service
+Wants=network-online.target docker.service
+
+[Service]
+Type=exec
+ExecStart=/usr/bin/komodo-periphery --config-path /etc/komodo-periphery.toml
+User=komodo
+Group=komodo
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

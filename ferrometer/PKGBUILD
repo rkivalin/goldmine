@@ -7,7 +7,7 @@ pkgdesc='Lightweight telemetry collector: system metrics to OTLP, journald to Lo
 arch=('x86_64' 'aarch64')
 url='https://github.com/rkivalin/ferrometer'
 license=('MIT')
-depends=('gcc-libs' 'glibc' 'systemd-libs')
+depends=('glibc' 'libgcc' 'systemd-libs')
 makedepends=('rust' 'protobuf' 'pkgconf')
 backup=('etc/ferrometer/config.toml')
 # The release profile does its own LTO and stripping; makepkg's -flto would

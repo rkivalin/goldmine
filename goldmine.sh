@@ -138,24 +138,36 @@ fetch_source() {
   fetch_url "$( src_file "$1" "$url" )" "$url" "$( getval "$1_sha256" )" ${2:+"$2"}
 }
 
-# recipe_meta: sets $pkg, $version (Debian revision included) and $upstream
-# from debian/changelog, then checks the recipe agrees with itself: the
-# PKGBUILD (via .SRCINFO, never sourced) carries the same upstream version,
-# and the main source URL names it. Uses sed, not dpkg-parsechangelog, so it
-# also runs in the Arch chroot.
+# recipe_meta: sets $pkg, $version (revision included) and $upstream from
+# debian/changelog, or from .SRCINFO for an Arch-only recipe, then checks
+# the recipe agrees with itself: the PKGBUILD (via .SRCINFO, never sourced)
+# carries the same upstream version as the changelog, and the main source
+# URL names it. Uses sed, not dpkg-parsechangelog, so it also runs in the
+# Arch chroot.
 recipe_meta() {
   local pkgver main
-  pkg=$( sed -n '1s/^\([^ ]*\) .*/\1/p' "$recipe/debian/changelog" )
-  version=$( sed -n '1s/^[^(]*(\([^)]*\)).*/\1/p' "$recipe/debian/changelog" )
-  upstream=${version%-*}
-  if [ -z "$pkg" ] || [ -z "$version" ]; then
-    echo "debian/changelog: cannot parse the first line" >&2
-    exit 1
-  fi
-  if [ -f "$recipe/.SRCINFO" ]; then
-    pkgver=$( sed -n 's/^\tpkgver = //p' "$recipe/.SRCINFO" )
-    if [ "$pkgver" != "$upstream" ]; then
-      echo ".SRCINFO pkgver is $pkgver but debian/changelog says $upstream; bump both" >&2
+  if [ -f "$recipe/debian/changelog" ]; then
+    pkg=$( sed -n '1s/^\([^ ]*\) .*/\1/p' "$recipe/debian/changelog" )
+    version=$( sed -n '1s/^[^(]*(\([^)]*\)).*/\1/p' "$recipe/debian/changelog" )
+    upstream=${version%-*}
+    if [ -z "$pkg" ] || [ -z "$version" ]; then
+      echo "debian/changelog: cannot parse the first line" >&2
+      exit 1
+    fi
+    if [ -f "$recipe/.SRCINFO" ]; then
+      pkgver=$( sed -n 's/^\tpkgver = //p' "$recipe/.SRCINFO" )
+      if [ "$pkgver" != "$upstream" ]; then
+        echo ".SRCINFO pkgver is $pkgver but debian/changelog says $upstream; bump both" >&2
+        exit 1
+      fi
+    fi
+  else
+    # Arch-only recipe: .SRCINFO is the one source of truth.
+    pkg=$( sed -n 's/^pkgbase = //p' "$recipe/.SRCINFO" )
+    upstream=$( sed -n 's/^\tpkgver = //p' "$recipe/.SRCINFO" )
+    version=$upstream-$( sed -n 's/^\tpkgrel = //p' "$recipe/.SRCINFO" )
+    if [ -z "$pkg" ] || [ -z "$upstream" ]; then
+      echo ".SRCINFO: cannot read pkgbase and pkgver" >&2
       exit 1
     fi
   fi

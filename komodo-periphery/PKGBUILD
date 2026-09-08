@@ -1,0 +1,79 @@
+# Maintainer: Roman Kivalin <roman@shl.dev>
+# Derived from the AUR package by MartorSkull <livemartor@gmail.com>.
+# Pin and hash mirror ../sources; bump both together.
+pkgname=komodo-periphery
+pkgver=2.3.3
+pkgrel=3
+pkgdesc='Periphery agent for Komodo: runs stacks, builds and repos on this host for a Komodo Core'
+arch=('x86_64' 'aarch64')
+url='https://komo.do/'
+license=('GPL-3.0-or-later')
+depends=('docker' 'glibc' 'libgcc' 'openssl')
+optdepends=(
+  'git: clone repos and git-backed stacks'
+  'docker-compose: deploy stacks'
+  'docker-buildx: run builds'
+)
+makedepends=('rust')
+conflicts=('komodo-periphery-bin')
+backup=('etc/komodo-periphery.toml')
+# The release profile only strips debuginfo; makepkg's -flto would leak
+# into aws-lc's C objects (the AUR package works around that with
+# -ffat-lto-objects), and there are no debug symbols worth splitting out.
+options=(!lto !debug)
+source=(
+  "komodo-v$pkgver.tar.gz::https://github.com/moghtech/komodo/archive/refs/tags/v$pkgver.tar.gz"
+  'git-check-no-which.patch'
+  'komodo-periphery.service'
+  'komodo-periphery.sysusers'
+  'komodo-periphery.tmpfiles'
+)
+sha256sums=(
+  '567e518ed5c3948c9a904162af553bef0350f02b7eb588a0405435b6d42415a9'
+  'fc8fab28acd1e472a2982692c9803ecbf1d33e9939c01216be7ce0ac6fed4152'
+  '271d3338cc7cbba18b9739576ad2ed3ce659da633227a34cb2418ef5537d3803'
+  '4cc41e6227b9f079eb9985731b3de773e5b488254ecd8aa8f3164bce9b46c90a'
+  '21ada3b1eca28fad5edc39ccbddf3269cb2f23ece04daf415fbd8f7fe1fc8ecc'
+)
+
+prepare() {
+  cd "komodo-$pkgver"
+  # git presence check via `git --version` instead of `which git`: which is
+  # not in Arch's base, and the check spawns it directly, without a shell.
+  patch -Np1 -i "$srcdir/git-check-no-which.patch"
+  # The tag's Cargo.lock is not quite in sync with its manifests (2.3.3
+  # lists two workspace-internal edges that no longer exist), so --locked
+  # refuses it. Let cargo repair it, then verify no registry package
+  # changed: every checksum line must survive untouched.
+  cp Cargo.lock Cargo.lock.orig
+  cargo fetch --target "$( rustc -vV | sed -n 's/host: //p' )"
+  # Tags carry version 0.0.0; upstream stamps the release version at build
+  # time (cargo set-version in its Dockerfiles). Same here, so the binary
+  # reports $pkgver. --workspace refreshes only the workspace members in
+  # Cargo.lock.
+  sed -i "/^\[workspace.package\]/,/^\[/ s/^version = \"0.0.0\"/version = \"$pkgver\"/" Cargo.toml
+  grep -q "^version = \"$pkgver\"" Cargo.toml
+  cargo update --workspace --offline
+  diff <( grep '^checksum = ' Cargo.lock.orig ) <( grep '^checksum = ' Cargo.lock )
+}
+
+build() {
+  cd "komodo-$pkgver"
+  cargo build --frozen --release --bin periphery
+}
+
+# No check(): the workspace tests want a Docker daemon and network.
+
+package() {
+  cd "komodo-$pkgver"
+  install -Dm755 target/release/periphery "$pkgdir/usr/bin/komodo-periphery"
+  # Upstream's reference config, with the root directory moved out of /etc.
+  sed 's|^root_directory = .*|root_directory = "/srv/komodo-periphery"|' config/periphery.config.toml \
+    >"$srcdir/komodo-periphery.toml"
+  grep -q '^root_directory = "/srv/komodo-periphery"$' "$srcdir/komodo-periphery.toml"
+  install -Dm644 "$srcdir/komodo-periphery.toml" "$pkgdir/etc/komodo-periphery.toml"
+  install -Dm644 "$srcdir/komodo-periphery.service" "$pkgdir/usr/lib/systemd/system/komodo-periphery.service"
+  install -Dm644 "$srcdir/komodo-periphery.sysusers" "$pkgdir/usr/lib/sysusers.d/komodo-periphery.conf"
+  install -Dm644 "$srcdir/komodo-periphery.tmpfiles" "$pkgdir/usr/lib/tmpfiles.d/komodo-periphery.conf"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

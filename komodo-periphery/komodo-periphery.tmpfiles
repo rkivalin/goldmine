@@ -1,0 +1,10 @@
+# Root directory from /etc/komodo-periphery.toml: stacks, repos and builds
+# live here, plus the keys and TLS material Periphery generates itself.
+# Ownership is fixed on the directories only (z, not Z): what is inside
+# stacks may be root-owned by design (container-created files).
+d /srv/komodo-periphery 0775 komodo komodo -
+z /srv/komodo-periphery - komodo komodo - -
+d /srv/komodo-periphery/ssl 0775 komodo komodo -
+z /srv/komodo-periphery/ssl - komodo komodo - -
+d /srv/komodo-periphery/keys 0755 komodo komodo -
+z /srv/komodo-periphery/keys - komodo komodo - -

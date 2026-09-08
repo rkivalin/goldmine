@@ -9,6 +9,7 @@ Package recipes for the `goldmine` Arch and Debian repositories.
 | `haproxy-quictls` | HAProxy with QUIC/HTTP3 via a statically linked QuicTLS, Lua scripting, PCRE2 and Prometheus metrics, with a hardened systemd unit | x | x |
 | `ferrometer` | Lightweight telemetry collector: system metrics to OTLP, systemd journal to Loki | x | x |
 | `certforge` | ACME certificate manager with DANE and systemd integration | x | x |
+| `komodo-periphery` | Periphery agent for [Komodo](https://komo.do/) | x | |
 
 Every package is built from pinned, hash-checked upstream sources in a
 clean chroot of the target distribution; nothing prebuilt is repackaged.

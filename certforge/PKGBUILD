@@ -7,7 +7,7 @@ pkgdesc='ACME certificate manager with DANE and systemd integration'
 arch=('x86_64' 'aarch64')
 url='https://github.com/rkivalin/certforge'
 license=('MIT')
-depends=('gcc-libs' 'glibc')
+depends=('glibc' 'libgcc')
 makedepends=('rust')
 backup=('etc/certforge/config.toml')
 # The release profile does its own LTO and stripping; makepkg's -flto would
