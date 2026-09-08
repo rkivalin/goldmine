@@ -20,7 +20,7 @@ endif
 MAKEARGS = V=1 \
 	TARGET=linux-glibc \
 	CFLAGS="$(CFLAGS) $(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
-	USE_PCRE2=1 USE_PCRE2_JIT=1 \
+	USE_PCRE2=1 \
 	USE_LUA=1 LUA_INC=/usr/include/lua5.4 LUA_LIB_NAME=lua5.4 \
 	USE_QUIC=1 USE_OPENSSL=1 SSL_INC=$(QUICTLS)/include SSL_LIB=$(QUICTLS)/lib \
 	USE_PROMEX=1 \
@@ -31,6 +31,7 @@ MAKEARGS = V=1 \
 
 override_dh_auto_build:
 	cmake -S quictls -B quictls/build \
+	  -DCMAKE_BUILD_TYPE=Release \
 	  -DCMAKE_C_FLAGS="$(CFLAGS) $(CPPFLAGS)" \
 	  -DOPENSSL_NO_SHARED=ON -DOPENSSL_NO_APPS=ON \
 	  -DOPENSSL_NO_TESTS=ON -DOPENSSL_NO_DOC=ON

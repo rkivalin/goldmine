@@ -1,7 +1,7 @@
 # Maintainer: Roman Kivalin <roman@shl.dev>
 # Pins and hashes mirror ../sources (Debian side); bump both together.
 pkgname=haproxy-quictls
-pkgver=3.4.3
+pkgver=3.4.4
 pkgrel=2
 _quictls_commit=3ce744293555deb469f60b4e838bdd41967b4273
 pkgdesc='HAProxy with QUIC/HTTP3 via QuicTLS, Lua scripting, Prometheus metrics'
@@ -19,19 +19,27 @@ source=(
   'haproxy.service'
   'haproxy.default'
   'haproxy.sysusers'
+  'quictls-zero-bio-write.patch'
 )
 sha256sums=(
-  '7fa666d36d198275999e2a68dda44d3d37960f2f7aed3a595fb811f4fd0515b5'
+  'b0c5053c4d46840ecdee3925736fe9a3de6472559b43c69183d70e593d9133df'
   '28a3aeef072dc9a12fcc1c9f6307edd5eb0b35152b8b88a98359fbbeaa21b4ab'
-  'e3dad13f24ad87a48ccc4bd3731b85676796a20386953351c877cf7b9ea9a9df'
+  '0ba7882a58dee058364ef2e81daddea88ed84a0bc257af1601707cf6de50dd0d'
   'de0f389ee7b49b2db61a7e648851930a5a093e052e12564c54efa8d15c0537d9'
   'f65d9c9799d202657d381bef89236f60d8710db41ee7e9c887f73b56d2a3eb88'
+  'f3552b51c2748b56bfe21cf547ff6d0b01c1b48bdbf3d37159243dbc7ad4ea75'
 )
 
+prepare() {
+  # Patch paths carry the Debian component prefix quictls/, hence -p2
+  patch -d "quictls-$_quictls_commit" -Np2 -i "$srcdir/quictls-zero-bio-write.patch"
+}
+
 build() {
-  # QuicTLS, static; cmake install is broken upstream, stage by hand
+  # QuicTLS, static; cmake install is broken upstream, stage by hand.
   cd "$srcdir/quictls-$_quictls_commit"
   cmake -B build \
+    -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_C_FLAGS="$CFLAGS -ffile-prefix-map=$srcdir=." \
     -DOPENSSL_NO_SHARED=ON \
     -DOPENSSL_NO_APPS=ON \
@@ -51,7 +59,6 @@ build() {
     CFLAGS="$CFLAGS" \
     LDFLAGS="$LDFLAGS" \
     USE_PCRE2=1 \
-    USE_PCRE2_JIT=1 \
     USE_LUA=1 \
     LUA_INC=/usr/include \
     LUA_LIB_NAME=lua \

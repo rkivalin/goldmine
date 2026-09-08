@@ -1,3 +1,23 @@
+haproxy-quictls (3.4.4-2) stable; urgency=medium
+
+  * Build without PCRE2 JIT: it needs writable+executable pages, which the
+    unit's MemoryDenyWriteExecute= forbids, so haproxy rejected every regex
+    in the config ("jit compilation failed") and failed to start.
+
+ -- Roman Kivalin <roman@shl.dev>  Tue, 08 Sep 2026 19:31:42 +0200
+
+haproxy-quictls (3.4.4-1) stable; urgency=medium
+
+  * HAProxy 3.4.4.
+  * Backport OpenSSL "Fix false success on zero BIO write" into QuicTLS
+    (openssl/openssl#31009): a client aborting a connection mid-response
+    left record data pending and the next write hit an ossl_assert(),
+    killing the worker (SIGABRT, tls_common.c:1867).
+  * Build QuicTLS with CMAKE_BUILD_TYPE=Release so ossl_assert() failures
+    become connection errors instead of aborting the process.
+
+ -- Roman Kivalin <roman@shl.dev>  Tue, 08 Sep 2026 19:18:31 +0200
+
 haproxy-quictls (3.4.3-1) stable; urgency=medium
 
   * HAProxy 3.4.3, QuicTLS 3ce7442935.

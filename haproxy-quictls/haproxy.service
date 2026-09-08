@@ -35,6 +35,7 @@ ProtectClock=true
 RestrictRealtime=true
 RestrictSUIDSGID=true
 LockPersonality=true
+# Forbids PCRE2 JIT too, hence the build without USE_PCRE2_JIT
 MemoryDenyWriteExecute=true
 RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
 SystemCallArchitectures=native

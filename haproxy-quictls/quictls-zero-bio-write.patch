@@ -1,0 +1,76 @@
+From: Mounir IDRASSI <mounir.idrassi@idrix.fr>
+Description: Fix false success on zero BIO write
+ The TLS record layer treated BIO_write returning 0 as success unless the
+ BIO retry flag was set. For a write with data pending in the write buffer,
+ this could report success to the application while leaving record data
+ pending internally. The next write then trips the "no pending data"
+ ossl_assert() at the top of tls_write_records(), which aborts the process
+ in a build without NDEBUG. HAProxy's BIO returns exactly this (0, no retry)
+ when the connection is already in error or shut for writing, so any client
+ that aborts a connection mid-response can kill a worker.
+ .
+ Port of OpenSSL commits 5f3db0d811 + a2eea872d0 (openssl-3.4.7, 3.5.8,
+ 3.6.4) to the QuicTLS tree, which is based on OpenSSL 3.3.0 and lacks the
+ later kTLS moving-buffer block the upstream hunk also touches.
+Origin: backport, https://github.com/openssl/openssl/commit/5f3db0d811329b600045842116a062520437c2a1
+Bug: https://github.com/openssl/openssl/issues/31009
+Applied-Upstream: openssl-3.4.7, openssl-3.5.8, openssl-3.6.4 (not in quictls as of c45abed8, 2026-08-21)
+Last-Update: 2026-09-08
+---
+diff --git a/quictls/ssl/record/methods/tls_common.c b/quictls/ssl/record/methods/tls_common.c
+--- a/quictls/ssl/record/methods/tls_common.c
++++ b/quictls/ssl/record/methods/tls_common.c
+@@ -1884,13 +1884,14 @@ int tls_retry_write_records(OSSL_RECORD_LAYER *rl)
+ {
+     int i, ret;
+     TLS_BUFFER *thiswb;
+-    size_t tmpwrit = 0;
++    size_t tmpwrit = 0, left;
+ 
+     if (rl->nextwbuf >= rl->numwpipes)
+         return OSSL_RECORD_RETURN_SUCCESS;
+ 
+     for (;;) {
+         thiswb = &rl->wbuf[rl->nextwbuf];
++        left = TLS_BUFFER_get_left(thiswb);
+ 
+         clear_sys_error();
+         if (rl->bio != NULL) {
+@@ -1902,13 +1903,24 @@ int tls_retry_write_records(OSSL_RECORD_LAYER *rl)
+             i = BIO_write(rl->bio, (char *)
+                           &(TLS_BUFFER_get_buf(thiswb)
+                             [TLS_BUFFER_get_offset(thiswb)]),
+-                          (unsigned int)TLS_BUFFER_get_left(thiswb));
++                          (unsigned int)left);
+             if (i >= 0) {
+                 tmpwrit = i;
+-                if (i == 0 && BIO_should_retry(rl->bio))
+-                    ret = OSSL_RECORD_RETURN_RETRY;
+-                else
++                if (i == 0 && left != 0) {
++                    if (BIO_should_retry(rl->bio)) {
++                        ret = OSSL_RECORD_RETURN_RETRY;
++                    } else {
++                        /*
++                         * Treat this as a fatal I/O condition. Do not queue an
++                         * SSL reason: a zero return with no retry flag may come
++                         * from a custom BIO and does not imply an SSL library
++                         * or protocol error.
++                         */
++                        ret = OSSL_RECORD_RETURN_FATAL;
++                    }
++                } else {
+                     ret = OSSL_RECORD_RETURN_SUCCESS;
++                }
+             } else {
+                 if (BIO_should_retry(rl->bio))
+                     ret = OSSL_RECORD_RETURN_RETRY;
+@@ -1928,7 +1940,7 @@ int tls_retry_write_records(OSSL_RECORD_LAYER *rl)
+          * Treat i == 0 as success rather than an error for zero byte
+          * writes to permit this case.
+          */
+-        if (i >= 0 && tmpwrit == TLS_BUFFER_get_left(thiswb)) {
++        if (i >= 0 && tmpwrit == left) {
+             TLS_BUFFER_set_left(thiswb, 0);
+             TLS_BUFFER_add_offset(thiswb, tmpwrit);
+             if (++(rl->nextwbuf) < rl->numwpipes)
