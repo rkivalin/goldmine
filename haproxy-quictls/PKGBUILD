@@ -1,0 +1,77 @@
+# Maintainer: Roman Kivalin <roman@shl.dev>
+# Pins and hashes mirror ../sources (Debian side); bump both together.
+pkgname=haproxy-quictls
+pkgver=3.4.3
+pkgrel=2
+_quictls_commit=3ce744293555deb469f60b4e838bdd41967b4273
+pkgdesc='HAProxy with QUIC/HTTP3 via QuicTLS, Lua scripting, Prometheus metrics'
+arch=('x86_64' 'aarch64')
+url='https://www.haproxy.org/'
+license=('GPL-2.0-or-later' 'LGPL-2.1-or-later' 'Apache-2.0')
+depends=('glibc' 'lua' 'pcre2')
+makedepends=('cmake')
+provides=('haproxy')
+conflicts=('haproxy')
+backup=('etc/default/haproxy')
+source=(
+  "https://www.haproxy.org/download/${pkgver%.*}/src/haproxy-$pkgver.tar.gz"
+  "quictls-$_quictls_commit.tar.gz::https://github.com/quictls/quictls/archive/$_quictls_commit.tar.gz"
+  'haproxy.service'
+  'haproxy.default'
+  'haproxy.sysusers'
+)
+sha256sums=(
+  '7fa666d36d198275999e2a68dda44d3d37960f2f7aed3a595fb811f4fd0515b5'
+  '28a3aeef072dc9a12fcc1c9f6307edd5eb0b35152b8b88a98359fbbeaa21b4ab'
+  'e3dad13f24ad87a48ccc4bd3731b85676796a20386953351c877cf7b9ea9a9df'
+  'de0f389ee7b49b2db61a7e648851930a5a093e052e12564c54efa8d15c0537d9'
+  'f65d9c9799d202657d381bef89236f60d8710db41ee7e9c887f73b56d2a3eb88'
+)
+
+build() {
+  # QuicTLS, static; cmake install is broken upstream, stage by hand
+  cd "$srcdir/quictls-$_quictls_commit"
+  cmake -B build \
+    -DCMAKE_C_FLAGS="$CFLAGS -ffile-prefix-map=$srcdir=." \
+    -DOPENSSL_NO_SHARED=ON \
+    -DOPENSSL_NO_APPS=ON \
+    -DOPENSSL_NO_TESTS=ON \
+    -DOPENSSL_NO_DOC=ON
+  cmake --build build
+
+  local quictls="$srcdir/quictls-install"
+  mkdir -p "$quictls/lib" "$quictls/include"
+  cp build/libcrypto.a build/libssl.a "$quictls/lib/"
+  cp -r include/openssl "$quictls/include/"
+  cp build/include/openssl/*.h "$quictls/include/openssl/"
+
+  cd "$srcdir/haproxy-$pkgver"
+  make \
+    TARGET=linux-glibc \
+    CFLAGS="$CFLAGS" \
+    LDFLAGS="$LDFLAGS" \
+    USE_PCRE2=1 \
+    USE_PCRE2_JIT=1 \
+    USE_LUA=1 \
+    LUA_INC=/usr/include \
+    LUA_LIB_NAME=lua \
+    USE_QUIC=1 \
+    USE_OPENSSL=1 \
+    SSL_INC="$quictls/include" \
+    SSL_LIB="$quictls/lib" \
+    USE_PROMEX=1
+}
+
+check() {
+  "$srcdir/haproxy-$pkgver/haproxy" -vv
+}
+
+package() {
+  cd "$srcdir/haproxy-$pkgver"
+  install -Dm755 haproxy "$pkgdir/usr/bin/haproxy"
+  install -Dm644 doc/haproxy.1 "$pkgdir/usr/share/man/man1/haproxy.1"
+  install -Dm644 "$srcdir/haproxy.service" "$pkgdir/usr/lib/systemd/system/haproxy.service"
+  install -Dm644 "$srcdir/haproxy.default" "$pkgdir/etc/default/haproxy"
+  install -Dm644 "$srcdir/haproxy.sysusers" "$pkgdir/usr/lib/sysusers.d/haproxy.conf"
+  install -dm755 "$pkgdir/etc/haproxy"
+}

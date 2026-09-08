@@ -1,0 +1,5 @@
+# HAProxy environment file
+# Loaded by systemd EnvironmentFile directive
+#
+# CONFIG=/etc/haproxy/haproxy.cfg
+# EXTRAOPTS=

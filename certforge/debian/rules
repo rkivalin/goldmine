@@ -1,0 +1,49 @@
+#!/usr/bin/make -f
+# Rust build with the rustup stable toolchain: bookworm's rustc 1.63 is far
+# below the crates' MSRV and bookworm has no rustup package, so goldmine.sh
+# puts a pinned rustup (with cargo/rustc proxies) in the chroot's
+# /usr/local/bin and points $RUSTUP_HOME and $CARGO_HOME at the persistent
+# cache, where the toolchain is installed on first use.
+# No upstream build system, so dh_auto_* are no-ops and the overrides do
+# the work; files are placed by dh_install (certforge.install), directories
+# by dh_installdirs (certforge.dirs), units by dh_installsystemd.
+
+include /usr/share/dpkg/default.mk
+
+export RUSTUP_TOOLCHAIN = stable
+
+PKGDIR = $(CURDIR)/debian/certforge
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	@command -v rustup >/dev/null || { echo 'rustup missing: goldmine.sh container init deb installs it' >&2; exit 1; }
+	rustup toolchain install $(RUSTUP_TOOLCHAIN) --profile minimal --no-self-update
+	cargo --version && rustc --version
+
+override_dh_auto_build:
+	cargo build --release --locked
+
+override_dh_auto_test:
+	cargo test --release --locked
+
+override_dh_auto_clean:
+	rm -rf target
+
+# Units go through debian/<pkg>.{service,timer}, which dh_installsystemd
+# installs itself: bookworm's debhelper 13.11 ignores units placed under
+# usr/lib/systemd/system by dh_install (lib/systemd/system was its path).
+# The timer is what runs; the service is a oneshot it triggers, and must
+# not be started by the package (that would run a renewal mid-install).
+override_dh_installsystemd:
+	cp examples/certforge.service examples/certforge.timer debian/
+	dh_installsystemd --no-start --no-enable certforge.service
+	dh_installsystemd certforge.timer
+
+# dh_fixperms normalises directories to 755; the certs and state dirs are
+# private to root.
+override_dh_fixperms:
+	dh_fixperms
+	chmod 750 $(PKGDIR)/etc/certforge/certs
+	chmod 700 $(PKGDIR)/var/lib/certforge

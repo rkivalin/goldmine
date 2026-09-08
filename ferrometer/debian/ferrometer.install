@@ -1,0 +1,2 @@
+target/release/ferrometer usr/bin
+examples/config.toml etc/ferrometer

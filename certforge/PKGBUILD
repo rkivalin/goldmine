@@ -1,0 +1,43 @@
+# Maintainer: Roman Kivalin <roman@shl.dev>
+# Pin and hash mirror ../sources (Debian side); bump both together.
+pkgname=certforge
+pkgver=0.10.0
+pkgrel=2
+pkgdesc='ACME certificate manager with DANE and systemd integration'
+arch=('x86_64' 'aarch64')
+url='https://github.com/rkivalin/certforge'
+license=('MIT')
+depends=('gcc-libs' 'glibc')
+makedepends=('rust')
+backup=('etc/certforge/config.toml')
+# The release profile does its own LTO and stripping; makepkg's -flto would
+# leak into ring's C objects, and there are no debug symbols to split out.
+options=(!lto !debug)
+source=("$pkgname-v$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=('565da3e6b92b1fe9dc429ed021519b1197ad773e76ebd4b0dd88a01cc813692f')
+
+prepare() {
+  cd "$pkgname-$pkgver"
+  cargo fetch --locked --target "$( rustc -vV | sed -n 's/host: //p' )"
+}
+
+build() {
+  cd "$pkgname-$pkgver"
+  cargo build --frozen --release
+}
+
+check() {
+  cd "$pkgname-$pkgver"
+  cargo test --frozen --release
+}
+
+package() {
+  cd "$pkgname-$pkgver"
+  install -Dm755 target/release/certforge "$pkgdir/usr/bin/certforge"
+  install -Dm644 examples/certforge.service "$pkgdir/usr/lib/systemd/system/certforge.service"
+  install -Dm644 examples/certforge.timer "$pkgdir/usr/lib/systemd/system/certforge.timer"
+  install -Dm644 examples/config.toml "$pkgdir/etc/certforge/config.toml"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -dm750 "$pkgdir/etc/certforge/certs"
+  install -dm700 "$pkgdir/var/lib/certforge"
+}

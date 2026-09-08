@@ -1,0 +1,25 @@
+Source: ferrometer
+Section: admin
+Priority: optional
+Maintainer: Roman Kivalin <roman@shl.dev>
+# Also needs rustup, which bookworm does not package: goldmine.sh container
+# init deb installs it into the chroot (see debian/rules).
+Build-Depends:
+ debhelper-compat (= 13),
+ protobuf-compiler,
+ libsystemd-dev,
+ pkgconf,
+Standards-Version: 4.7.2
+Rules-Requires-Root: no
+Homepage: https://github.com/rkivalin/ferrometer
+
+Package: ferrometer
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Lightweight telemetry collector
+ Ferrometer collects system metrics (CPU, memory, disk, filesystem,
+ network, hwmon, md) and scrapes Prometheus endpoints, forwarding them
+ over OTLP HTTP to backends such as VictoriaMetrics. It also ships the
+ systemd journal to Loki. A single static-ish binary under a hardened
+ systemd unit, as a lightweight alternative to Grafana Alloy or the
+ OpenTelemetry Collector.

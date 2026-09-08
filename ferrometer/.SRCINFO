@@ -1,0 +1,21 @@
+pkgbase = ferrometer
+	pkgdesc = Lightweight telemetry collector: system metrics to OTLP, journald to Loki
+	pkgver = 0.5.0
+	pkgrel = 2
+	url = https://github.com/rkivalin/ferrometer
+	arch = x86_64
+	arch = aarch64
+	license = MIT
+	makedepends = rust
+	makedepends = protobuf
+	makedepends = pkgconf
+	depends = gcc-libs
+	depends = glibc
+	depends = systemd-libs
+	options = !lto
+	options = !debug
+	backup = etc/ferrometer/config.toml
+	source = ferrometer-v0.5.0.tar.gz::https://github.com/rkivalin/ferrometer/archive/refs/tags/v0.5.0.tar.gz
+	sha256sums = e5d23eadd26685223c6d119dc0c7c093acfffe7b00cc651bad165aee69ba3f0e
+
+pkgname = ferrometer

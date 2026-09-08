@@ -1,0 +1,60 @@
+#!/usr/bin/make -f
+# HAProxy linked statically against QuicTLS (unpacked into quictls/ from the
+# orig-quictls component tarball) and dynamically against Debian's PCRE2,
+# Lua 5.4 and libsystemd. Everything else is stock dh.
+
+include /usr/share/dpkg/default.mk
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+PKGDIR  = $(CURDIR)/debian/haproxy-quictls
+QUICTLS = $(CURDIR)/quictls/install
+
+NUMJOBS = 1
+ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+endif
+
+# dpkg-buildflags supplies CFLAGS/CPPFLAGS/LDFLAGS (hardening included);
+# HAProxy's Makefile appends user CFLAGS/LDFLAGS after its own.
+MAKEARGS = V=1 \
+	TARGET=linux-glibc \
+	CFLAGS="$(CFLAGS) $(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
+	USE_PCRE2=1 USE_PCRE2_JIT=1 \
+	USE_LUA=1 LUA_INC=/usr/include/lua5.4 LUA_LIB_NAME=lua5.4 \
+	USE_QUIC=1 USE_OPENSSL=1 SSL_INC=$(QUICTLS)/include SSL_LIB=$(QUICTLS)/lib \
+	USE_PROMEX=1 \
+	PREFIX=/usr
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	cmake -S quictls -B quictls/build \
+	  -DCMAKE_C_FLAGS="$(CFLAGS) $(CPPFLAGS)" \
+	  -DOPENSSL_NO_SHARED=ON -DOPENSSL_NO_APPS=ON \
+	  -DOPENSSL_NO_TESTS=ON -DOPENSSL_NO_DOC=ON
+	cmake --build quictls/build --parallel $(NUMJOBS)
+	# cmake install is broken upstream (no header rule); stage by hand
+	mkdir -p $(QUICTLS)/lib $(QUICTLS)/include
+	cp quictls/build/libcrypto.a quictls/build/libssl.a $(QUICTLS)/lib/
+	cp -r quictls/include/openssl $(QUICTLS)/include/
+	cp quictls/build/include/openssl/*.h $(QUICTLS)/include/openssl/
+	$(MAKE) -j$(NUMJOBS) $(MAKEARGS)
+
+override_dh_auto_test:
+	./haproxy -vv
+
+override_dh_auto_install:
+	$(MAKE) $(MAKEARGS) install-bin install-man DESTDIR=$(PKGDIR)
+	install -Dm644 debian/haproxy.default $(PKGDIR)/etc/default/haproxy
+
+override_dh_auto_clean:
+	rm -rf quictls/build quictls/install
+	$(MAKE) clean
+
+override_dh_installsystemd:
+	dh_installsystemd --name=haproxy
+
+override_dh_installsysusers:
+	dh_installsysusers --name=haproxy

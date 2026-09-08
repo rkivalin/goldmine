@@ -1,0 +1,10 @@
+certforge (0.10.0-2) stable; urgency=medium
+
+  * Rebuild as a dh-based source package from the release tag, replacing
+    the hand-rolled .deb attached to the GitHub release. The timer is
+    enabled and started by dh_installsystemd; the oneshot service is
+    installed but never started by the package.
+  * Build with the rustup stable toolchain: the locked crates need rustc
+    1.88 or newer, well past what bookworm packages.
+
+ -- Roman Kivalin <roman@shl.dev>  Tue, 08 Sep 2026 14:40:15 +0200

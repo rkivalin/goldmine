@@ -1,0 +1,23 @@
+Source: haproxy-quictls
+Section: net
+Priority: optional
+Maintainer: Roman Kivalin <roman@shl.dev>
+Build-Depends:
+ debhelper-compat (= 13),
+ cmake,
+ liblua5.4-dev,
+ libpcre2-dev,
+Standards-Version: 4.7.2
+Rules-Requires-Root: no
+Homepage: https://www.haproxy.org/
+
+Package: haproxy-quictls
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Provides: haproxy (= ${binary:Version})
+Conflicts: haproxy
+Replaces: haproxy
+Description: HAProxy with QUIC/HTTP3 via QuicTLS (custom build)
+ High-performance TCP/HTTP load balancer built with QUIC/HTTP3 support
+ via a statically linked QuicTLS, Lua 5.4 scripting, PCRE2 and
+ Prometheus metrics.

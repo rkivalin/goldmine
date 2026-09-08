@@ -1,0 +1,49 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: haproxy
+Upstream-Contact: Willy Tarreau <w@1wt.eu>
+Source: https://www.haproxy.org/download/3.4/src/
+Comment: quictls/ is https://github.com/quictls/quictls, shipped as the
+ orig-quictls component tarball and linked statically. HAProxy's LICENSE
+ grants an exception for linking with OpenSSL-derived code.
+
+Files: *
+Copyright: 2000-2026 Willy Tarreau <w@1wt.eu> and HAProxy contributors
+License: GPL-2+
+
+Files: include/*
+Copyright: 2000-2026 Willy Tarreau <w@1wt.eu> and HAProxy contributors
+License: LGPL-2.1+
+
+Files: quictls/*
+Copyright: 1998-2026 The OpenSSL Project Authors
+ 2024-2026 The QuicTLS Project Authors
+License: Apache-2.0
+
+Files: debian/*
+Copyright: 2026 Roman Kivalin <roman@shl.dev>
+License: GPL-2+
+
+License: GPL-2+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+ .
+ On Debian systems, the complete text of the GNU General Public License
+ version 2 can be found in "/usr/share/common-licenses/GPL-2".
+
+License: LGPL-2.1+
+ This library is free software; you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published
+ by the Free Software Foundation; either version 2.1 of the License, or
+ (at your option) any later version.
+ .
+ On Debian systems, the complete text of the GNU Lesser General Public
+ License version 2.1 can be found in "/usr/share/common-licenses/LGPL-2.1".
+
+License: Apache-2.0
+ Licensed under the Apache License, Version 2.0 (the "License"); you may
+ not use this file except in compliance with the License.
+ .
+ On Debian systems, the complete text of the Apache License version 2.0
+ can be found in "/usr/share/common-licenses/Apache-2.0".

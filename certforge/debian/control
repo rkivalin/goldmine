@@ -1,0 +1,21 @@
+Source: certforge
+Section: admin
+Priority: optional
+Maintainer: Roman Kivalin <roman@shl.dev>
+# Also needs rustup, which bookworm does not package: goldmine.sh container
+# init deb installs it into the chroot (see debian/rules).
+Build-Depends:
+ debhelper-compat (= 13),
+Standards-Version: 4.7.2
+Rules-Requires-Root: no
+Homepage: https://github.com/rkivalin/certforge
+
+Package: certforge
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: ACME certificate manager with DANE and systemd integration
+ Certforge automates ACME certificate issuance and renewal: DNS-01
+ challenges through RFC 2136 dynamic updates, HTTP-01 and TLS-ALPN-01 for
+ IP address certificates, DANE TLSA record publication, secrets from
+ systemd credentials, and post-renewal hooks that reload or restart
+ services over D-Bus. A daily timer drives the oneshot renew service.

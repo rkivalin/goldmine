@@ -1,0 +1,18 @@
+pkgbase = certforge
+	pkgdesc = ACME certificate manager with DANE and systemd integration
+	pkgver = 0.10.0
+	pkgrel = 2
+	url = https://github.com/rkivalin/certforge
+	arch = x86_64
+	arch = aarch64
+	license = MIT
+	makedepends = rust
+	depends = gcc-libs
+	depends = glibc
+	options = !lto
+	options = !debug
+	backup = etc/certforge/config.toml
+	source = certforge-v0.10.0.tar.gz::https://github.com/rkivalin/certforge/archive/refs/tags/v0.10.0.tar.gz
+	sha256sums = 565da3e6b92b1fe9dc429ed021519b1197ad773e76ebd4b0dd88a01cc813692f
+
+pkgname = certforge

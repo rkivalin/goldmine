@@ -1,0 +1,2 @@
+target/release/certforge usr/bin
+examples/config.toml etc/certforge

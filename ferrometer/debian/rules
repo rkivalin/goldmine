@@ -1,0 +1,38 @@
+#!/usr/bin/make -f
+# Rust build with the rustup stable toolchain: bookworm's rustc 1.63 is far
+# below the crates' MSRV and bookworm has no rustup package, so goldmine.sh
+# puts a pinned rustup (with cargo/rustc proxies) in the chroot's
+# /usr/local/bin and points $RUSTUP_HOME and $CARGO_HOME at the persistent
+# cache, where the toolchain is installed on first use.
+# No upstream build system, so dh_auto_* are no-ops and the overrides do
+# the work; files are placed by dh_install (ferrometer.install), the unit
+# by dh_installsystemd.
+
+include /usr/share/dpkg/default.mk
+
+export RUSTUP_TOOLCHAIN = stable
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	@command -v rustup >/dev/null || { echo 'rustup missing: goldmine.sh container init deb installs it' >&2; exit 1; }
+	rustup toolchain install $(RUSTUP_TOOLCHAIN) --profile minimal --no-self-update
+	cargo --version && rustc --version
+
+override_dh_auto_build:
+	cargo build --release --locked
+
+override_dh_auto_test:
+	cargo test --release --locked
+
+override_dh_auto_clean:
+	rm -rf target
+
+# The unit goes through debian/ferrometer.service, which dh_installsystemd
+# installs itself: bookworm's debhelper 13.11 ignores units placed under
+# usr/lib/systemd/system by dh_install (lib/systemd/system was its path),
+# and 0.5.0-2 shipped without enable/start/restart scripts because of it.
+override_dh_installsystemd:
+	cp examples/ferrometer.service debian/
+	dh_installsystemd

@@ -1,0 +1,9 @@
+# Upstream pin for certforge. Plain key=value, no shell.
+# URL + sha256 of the downloaded file; the same pair goes into the
+# PKGBUILD's source=/sha256sums.
+#
+# GitHub's export of the release tag: the release attaches only the
+# hand-rolled .deb/.pkg builds this recipe replaces. The content is fixed by
+# the tag, the hash pins the bytes GitHub served.
+certforge_url=https://github.com/rkivalin/certforge/archive/refs/tags/v0.10.0.tar.gz
+certforge_sha256=565da3e6b92b1fe9dc429ed021519b1197ad773e76ebd4b0dd88a01cc813692f

@@ -1,0 +1,9 @@
+haproxy-quictls (3.4.3-1) stable; urgency=medium
+
+  * HAProxy 3.4.3, QuicTLS 3ce7442935.
+  * Switch to PCRE2 and the system Lua 5.4; drop libsystemd (HAProxy 3.x
+    carries its own sd_notify).
+  * Fix debian/copyright DEP-5 license paragraphs.
+  * Rebuild as a dh-based source package.
+
+ -- Roman Kivalin <roman@shl.dev>  Mon, 07 Sep 2026 23:41:01 +0200

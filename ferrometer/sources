@@ -1,0 +1,11 @@
+# Upstream pin for ferrometer. Plain key=value, no shell.
+# URL + sha256 of the downloaded file; the same pair goes into the
+# PKGBUILD's source=/sha256sums.
+#
+# GitHub's export of the release tag. The release attaches no source
+# tarball, only the hand-rolled .deb/.pkg builds this recipe replaces. As
+# with quictls: the content is fixed by the tag, the hash pins the bytes
+# GitHub served, and a change in GitHub's archive compression would fail
+# the hash check loudly.
+ferrometer_url=https://github.com/rkivalin/ferrometer/archive/refs/tags/v0.5.0.tar.gz
+ferrometer_sha256=e5d23eadd26685223c6d119dc0c7c093acfffe7b00cc651bad165aee69ba3f0e

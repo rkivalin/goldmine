@@ -1,0 +1,15 @@
+# Upstream pins for haproxy-quictls. Plain key=value, no shell.
+# Both entries are URL + sha256 of the downloaded file, so the same values
+# can go straight into the PKGBUILD's source=/sha256sums.
+#
+# HAProxy: the release tarball on www.haproxy.org. Upstream publishes the hash
+# next to it as <name>.tar.gz.sha256. The file name must be
+# haproxy-<upstream version>.tar.gz with the version from debian/changelog.
+haproxy_url=https://www.haproxy.org/download/3.4/src/haproxy-3.4.3.tar.gz
+haproxy_sha256=7fa666d36d198275999e2a68dda44d3d37960f2f7aed3a595fb811f4fd0515b5
+
+# QuicTLS: no release tarballs or tags, so GitHub's export of the pinned
+# commit. Its content is fixed by the commit; the hash pins the bytes GitHub
+# served.
+quictls_url=https://github.com/quictls/quictls/archive/3ce744293555deb469f60b4e838bdd41967b4273.tar.gz
+quictls_sha256=28a3aeef072dc9a12fcc1c9f6307edd5eb0b35152b8b88a98359fbbeaa21b4ab
