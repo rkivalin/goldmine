@@ -308,7 +308,8 @@ build_arch() {
   # SRCDEST (the shared cache), src/pkg trees go to BUILDDIR, packages to
   # PKGDEST.
   makepkg() {
-    BUILDDIR="$work/build" SRCDEST="$cache/dist" PKGDEST="$out" command makepkg "$@"
+    BUILDDIR="$work/build" SRCDEST="$cache/dist" PKGDEST="$out" \
+      MAKEFLAGS="${MAKEFLAGS:--j$( nproc )}" command makepkg "$@"
   }
 
   # The host reads .SRCINFO and never the PKGBUILD, so they must agree.
