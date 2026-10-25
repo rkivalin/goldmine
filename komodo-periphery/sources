@@ -5,5 +5,5 @@
 # GitHub's export of the release tag of the komodo monorepo; only the
 # periphery binary is built from it. The content is fixed by the tag, the
 # hash pins the bytes GitHub served.
-komodo_url=https://github.com/moghtech/komodo/archive/refs/tags/v2.3.3.tar.gz
-komodo_sha256=567e518ed5c3948c9a904162af553bef0350f02b7eb588a0405435b6d42415a9
+komodo_url=https://github.com/moghtech/komodo/archive/refs/tags/v2.3.4.tar.gz
+komodo_sha256=d025e8e669973995f3faa94c810a384d7c76f90efa27e6fa6ebfe8ac2b98baf8

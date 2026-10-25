@@ -2,8 +2,8 @@
 # Derived from the AUR package by MartorSkull <livemartor@gmail.com>.
 # Pin and hash mirror ../sources; bump both together.
 pkgname=komodo-periphery
-pkgver=2.3.3
-pkgrel=3
+pkgver=2.3.4
+pkgrel=1
 pkgdesc='Periphery agent for Komodo: runs stacks, builds and repos on this host for a Komodo Core'
 arch=('x86_64' 'aarch64')
 url='https://komo.do/'
@@ -29,7 +29,7 @@ source=(
   'komodo-periphery.tmpfiles'
 )
 sha256sums=(
-  '567e518ed5c3948c9a904162af553bef0350f02b7eb588a0405435b6d42415a9'
+  'd025e8e669973995f3faa94c810a384d7c76f90efa27e6fa6ebfe8ac2b98baf8'
   'fc8fab28acd1e472a2982692c9803ecbf1d33e9939c01216be7ce0ac6fed4152'
   '271d3338cc7cbba18b9739576ad2ed3ce659da633227a34cb2418ef5537d3803'
   '4cc41e6227b9f079eb9985731b3de773e5b488254ecd8aa8f3164bce9b46c90a'
