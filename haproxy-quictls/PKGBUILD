@@ -1,9 +1,9 @@
 # Maintainer: Roman Kivalin <roman@shl.dev>
 # Pins and hashes mirror ../sources (Debian side); bump both together.
 pkgname=haproxy-quictls
-pkgver=3.4.4
-pkgrel=2
-_quictls_commit=3ce744293555deb469f60b4e838bdd41967b4273
+pkgver=3.4.7
+pkgrel=1
+_quictls_commit=c45abed8dc4034711ee2e117573e77f8257e8f1f
 pkgdesc='HAProxy with QUIC/HTTP3 via QuicTLS, Lua scripting, Prometheus metrics'
 arch=('x86_64' 'aarch64')
 url='https://www.haproxy.org/'
@@ -22,8 +22,8 @@ source=(
   'quictls-zero-bio-write.patch'
 )
 sha256sums=(
-  'b0c5053c4d46840ecdee3925736fe9a3de6472559b43c69183d70e593d9133df'
-  '28a3aeef072dc9a12fcc1c9f6307edd5eb0b35152b8b88a98359fbbeaa21b4ab'
+  'ccfd342f3724c2cd659574044d788f44e20b212467c6bd5edbbfc517a2775dca'
+  '603ba27e39ea489b09cb0a7fbfc7e8ebe5b17a6cd40b9a66697f074acc0835e4'
   '0ba7882a58dee058364ef2e81daddea88ed84a0bc257af1601707cf6de50dd0d'
   'de0f389ee7b49b2db61a7e648851930a5a093e052e12564c54efa8d15c0537d9'
   'f65d9c9799d202657d381bef89236f60d8710db41ee7e9c887f73b56d2a3eb88'

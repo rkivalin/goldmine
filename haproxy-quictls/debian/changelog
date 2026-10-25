@@ -1,3 +1,10 @@
+haproxy-quictls (3.4.7-1) stable; urgency=medium
+
+  * HAProxy 3.4.7.
+  * QuicTLS c45abed8 (2026-08-21).
+
+ -- Roman Kivalin <roman@shl.dev>  Sun, 25 Oct 2026 13:07:56 +0100
+
 haproxy-quictls (3.4.4-2) stable; urgency=medium
 
   * Build without PCRE2 JIT: it needs writable+executable pages, which the
